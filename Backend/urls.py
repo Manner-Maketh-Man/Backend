@@ -21,3 +21,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('apis/', include('apis.urls')),
 ]
+
+admin.site.site_header = 'MMM Back-End Administration'
+admin.site.site_title = 'MMM DB Management'
+admin.site.index_title = 'MMM'
