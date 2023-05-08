@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+</head>
+<body>
+    <h1>Upload JSON File</h1>
+    <input type="file" id="fileInput" accept="application/json">
+    <button id="uploadButton">Upload</button>
+    <h2 id="responseHeading" style="display:none;">Response: <span id="responseText"></span></h2>
+
+    <script>
+        const fileInput = document.getElementById("fileInput");
+        const uploadButton = document.getElementById("uploadButton");
+        const responseHeading = document.getElementById("responseHeading");
+        const responseText = document.getElementById("responseText");
+
+        // appName을 변수로 설정
+        const appName = "http://localhost:8000";
+
+        uploadButton.addEventListener("click", async () => {
+            if (fileInput.files.length === 0) {
+                alert("Please select a JSON file");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const response = await fetch(`${appName}/apis/process_file/`, {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    const jsonResponse = await response.json();
+                    responseText.innerText = jsonResponse.response_data;
+                    responseHeading.style.display = "block";
+                } else {
+                    throw new Error("Error in response");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("There was an error processing your file. Please try again.");
+            }
+        });
+    </script>
+</body>
+</html>
