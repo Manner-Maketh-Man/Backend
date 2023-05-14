@@ -28,20 +28,20 @@ def handle_uploaded_file(file):
     #     return None, None
     #
     # try:
-    #     # 응답에서 정수 데이터(감정값)를 가져옵니다.
-    #     response_data = response.json()['prediction']
     #     # TODO
     #     #   실제 머신러닝 서버가 반환하는 응답의 형태에 따라 수정해야 함
-    #     # 응답에서 이름 데이터를 가져옵니다.
+    #     # 응답에서 이름 데이터를 가져옴
     #     opposite_name = response.json()['opposite_name']
+    #     # 응답에서 정수 데이터(감정값)를 가져옴
+    #     response_data = response.json()['prediction']
     # except KeyError:
     #     # 응답 데이터에서 필요한 정보를 찾을 수 없는 경우
     #     print("Invalid response data")
     #     return None, None
     #
-    # return response_data, opposite_name
+    # return opposite_name, response_data
 
-    return 123, 'test_name'  # 테스트용
+    return 'test_name', 123  # 테스트용
 
 
 @csrf_exempt
@@ -49,7 +49,7 @@ def process_file(request):
     if request.method == 'POST':
         file = request.FILES.get('file')
         file_received_time = timezone.now()
-        response_data, opposite_name = handle_uploaded_file(file)
+        opposite_name, response_data = handle_uploaded_file(file)
 
         # 파일이 존재하지 않는 경우, 에러 메시지를 반환
         if response_data is None or opposite_name is None:
@@ -58,9 +58,9 @@ def process_file(request):
         response_received_time = timezone.now()
 
         file_transaction = FileTransaction.objects.create(
-            opposite_name=opposite_name,
             file_received_time=file_received_time,
             response_received_time=response_received_time,
+            opposite_name=opposite_name,
             response_data=response_data
         )
         file_transaction.save()
