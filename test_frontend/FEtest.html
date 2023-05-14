@@ -9,7 +9,7 @@
     <h1>Upload JSON File</h1>
     <input type="file" id="fileInput" accept="application/json">
     <button id="uploadButton">Upload</button>
-    <h2 id="responseHeading" style="display:none;">Response: <span id="responseText"></span></h2>
+    <h2 id="responseHeading" style="display:none;"><span id="responseText"></span></h2>
 
     <script>
         const fileInput = document.getElementById("fileInput");
@@ -38,7 +38,8 @@
 
                 if (response.ok) {
                     const jsonResponse = await response.json();
-                    responseText.innerText = jsonResponse.response_data;
+                    responseText.innerText = "oppsite_name: " + jsonResponse.opposite_name + '\n'
+                        + "recent_responses: " + jsonResponse.recent_responses;
                     responseHeading.style.display = "block";
                 } else {
                     throw new Error("Error in response");

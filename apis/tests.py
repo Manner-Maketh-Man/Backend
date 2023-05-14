@@ -1,35 +1,44 @@
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, Client
-from django.utils import timezone
+from django.core.files.uploadedfile import SimpleUploadedFile
 from .models import FileTransaction
-import json
+from django.utils import timezone
 
 
-class FileTransactionModelTest(TestCase):
-    def test_create_file_transaction(self):
-        file_received_time = timezone.now()
-        response_received_time = timezone.now()
-        response_data = 123
-
-        file_transaction = FileTransaction.objects.create(
-            file_received_time=file_received_time,
-            response_received_time=response_received_time,
-            response_data=response_data
+class FileTransactionModelTestCase(TestCase):
+    def setUp(self):
+        FileTransaction.objects.create(
+            opposite_name='test_name',
+            file_received_time=timezone.now(),
+            response_received_time=timezone.now(),
+            response_data=123
         )
 
-        self.assertEqual(file_received_time, file_transaction.file_received_time)
-        self.assertEqual(response_received_time, file_transaction.response_received_time)
-        self.assertEqual(response_data, file_transaction.response_data)
+    def test_file_transaction_creation(self):
+        file_transaction = FileTransaction.objects.get(opposite_name='test_name')
+        self.assertIsInstance(file_transaction, FileTransaction)
+        self.assertEqual(file_transaction.response_data, 123)
 
 
-class ProcessFileViewTest(TestCase):
+class ProcessFileViewTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
     def test_process_file_view(self):
-        test_json_data = {'key': 'value'}
-        test_json_file = SimpleUploadedFile("test_json_file.json", json.dumps(test_json_data).encode(), content_type="application/json")
-        response = self.client.post('/apis/process_file/', {'file': test_json_file})
+        file = SimpleUploadedFile("file.json", b"file_content", content_type="text/plain")
+        response = self.client.post('/apis/process_file/', {'file': file}, format='multipart')
 
+        # Test if the response status is 200 OK
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['response_data'], 123)  # handle_uploaded_file에서 반환된 값
+
+        # Test if the response data contains the opposite_name and recent_responses
+        self.assertContains(response, 'opposite_name')
+        self.assertContains(response, 'recent_responses')
+
+    def test_process_file_view_no_file(self):
+        response = self.client.post('/apis/process_file/', {}, format='multipart')
+
+        # Test if the response status is 200 OK
+        self.assertEqual(response.status_code, 200)
+
+        # Test if the response data contains the error message
+        self.assertContains(response, 'No file or empty file or No name')

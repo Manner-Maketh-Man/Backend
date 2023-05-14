@@ -38,8 +38,9 @@
                 .then(response => response.json())
                 .then(data => {
                     // 알림창에 JSON 응답 표시 후 새로고침
-                    if (data.response_data) {
-                        alert(`Response data: ${data.response_data}`);
+                    if (data.recent_responses) {
+                        alert(
+                            `opposite_name: ${data.opposite_name}\nrecent_responses: ${data.recent_responses}`);
                         window.location.reload();
                     } else if (data.error) {
                         alert(`Error: ${data.error}`);
