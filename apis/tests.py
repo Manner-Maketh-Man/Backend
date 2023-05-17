@@ -1,44 +1,62 @@
 from django.test import TestCase, Client
-from django.core.files.uploadedfile import SimpleUploadedFile
-from .models import FileTransaction
 from django.utils import timezone
+from .models import JSONTransaction
+from .views import get_recent_responses
+import json
 
 
-class FileTransactionModelTestCase(TestCase):
+class JSONTransactionTestCase(TestCase):
     def setUp(self):
-        FileTransaction.objects.create(
-            opposite_name='test_name',
-            file_received_time=timezone.now(),
-            response_received_time=timezone.now(),
-            response_data=123
-        )
-
-    def test_file_transaction_creation(self):
-        file_transaction = FileTransaction.objects.get(opposite_name='test_name')
-        self.assertIsInstance(file_transaction, FileTransaction)
-        self.assertEqual(file_transaction.response_data, 123)
-
-
-class ProcessFileViewTestCase(TestCase):
-    def setUp(self):
+        # Initialize a client object
         self.client = Client()
 
-    def test_process_file_view(self):
-        file = SimpleUploadedFile("file.json", b"file_content", content_type="text/plain")
-        response = self.client.post('/apis/process_file/', {'file': file}, format='multipart')
+    def test_process_json_post(self):
+        # Prepare data to post
+        data_to_post = {
+            "key1": "value1",
+            "key2": "value2"
+        }
+        response = self.client.post('/apis/process_json/',
+                                    data=json.dumps(data_to_post),
+                                    content_type='application/json')
 
-        # Test if the response status is 200 OK
+        # Check the status code of the response
         self.assertEqual(response.status_code, 200)
 
-        # Test if the response data contains the opposite_name and recent_responses
-        self.assertContains(response, 'opposite_name')
-        self.assertContains(response, 'recent_responses')
+        # Check the response data
+        response_data = response.json()
+        self.assertIn('recent_responses', response_data)
 
-    def test_process_file_view_no_file(self):
-        response = self.client.post('/apis/process_file/', {}, format='multipart')
+        # Check if the transaction is recorded in the database
+        transaction = JSONTransaction.objects.first()
+        self.assertIsNotNone(transaction)
+        self.assertEqual(json.loads(transaction.json_content), data_to_post)
+        self.assertEqual(transaction.response_data, 123)
 
-        # Test if the response status is 200 OK
+    def test_process_json_invalid_request_method(self):
+        # Send a GET request
+        response = self.client.get('/apis/process_json/')
         self.assertEqual(response.status_code, 200)
 
-        # Test if the response data contains the error message
-        self.assertContains(response, 'No file or empty file or No name')
+        # Check the response data
+        response_data = response.json()
+        self.assertEqual(response_data, {'error': 'Invalid request method'})
+
+    def test_get_recent_responses(self):
+        # Create 10 JSONTransaction instances
+        for i in range(10):
+            JSONTransaction.objects.create(
+                json_received_time=timezone.now(),
+                json_content=json.dumps({"key": "value"}),
+                response_received_time=timezone.now(),
+                response_data=i
+            )
+
+        # Call the function
+        recent_responses = get_recent_responses()
+
+        # Check the length of the response
+        self.assertEqual(len(recent_responses), 5)
+
+        # Check the content of the response
+        self.assertEqual(recent_responses, [9, 8, 7, 6, 5])

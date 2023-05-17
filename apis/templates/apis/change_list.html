@@ -21,34 +21,39 @@
 
                 const fileInput = form.querySelector('input[type="file"]');
                 const file = fileInput.files[0];
-                const formData = new FormData();
-                formData.append('file', file);
 
-                // Add CSRF token
-                const csrftoken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
-                const url = '{% url "process_file" %}';
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const text = evt.target.result;
 
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': csrftoken,
-                    },
-                    body: formData,
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // 알림창에 JSON 응답 표시 후 새로고침
-                    if (data.recent_responses) {
-                        alert(`recent_responses: ${data.recent_responses}`);
-                        window.location.reload();
-                    } else if (data.error) {
-                        alert(`Error: ${data.error}`);
-                        window.location.reload();
-                    }
-                })
-                .catch(error => {
-                    console.error('There was an error processing your file. Please try again.', error);
-                });
+                    // Add CSRF token
+                    const csrftoken = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+                    const url = '{% url "process_json" %}';
+
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                            'Content-Type': 'application/json'
+                        },
+                        body: text,
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // 알림창에 JSON 응답 표시 후 새로고침
+                        if (data.recent_responses) {
+                            alert(`${JSON.stringify(data, null, 2)}`);
+                            window.location.reload();
+                        } else if (data.error) {
+                            alert(`Error: ${data.error}`);
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('There was an error processing your file. Please try again.', error);
+                    });
+                };
+                reader.readAsText(file);
             });
         });
     </script>

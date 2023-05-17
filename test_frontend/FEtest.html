@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload</title>
+    <title>Upload JSON File</title>
 </head>
 <body>
     <h1>Upload JSON File</h1>
     <input type="file" id="fileInput" accept="application/json">
     <button id="uploadButton">Upload</button>
-    <h2 id="responseHeading" style="display:none;"><span id="responseText"></span></h2>
+    <h2 id="responseHeading" style="display:none;"><pre id="responseText"></pre></h2>
     <button id="downloadButton" style="display:none;">Download JSON response</button>
 
     <script>
@@ -28,43 +28,50 @@
             }
 
             const file = fileInput.files[0];
-            const formData = new FormData();
-            formData.append("file", file);
+            const reader = new FileReader();
 
-            try {
-                const response = await fetch(`${appName}/apis/process_file/`, {
-                    method: "POST",
-                    body: formData,
-                });
+            reader.onload = async function(evt) {
+                const text = evt.target.result;
 
-                if (response.ok) {
-                    const jsonResponse = await response.json();
-                    responseText.innerText = "recent_responses: " + JSON.stringify(jsonResponse.recent_responses, null, 2);
-                    responseHeading.style.display = "block";
-
-                    // Create a blob from the JSON response
-                    const blob = new Blob([JSON.stringify(jsonResponse, null, 2)], {type : 'application/json'});
-
-                    // Create a link for our script to 'click'
-                    const url = window.URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = 'response.json';
-
-                    // This will prompt the user to download the data file named "response.json"
-                    downloadButton.addEventListener('click', function() {
-                        link.click();
+                try {
+                    const response = await fetch(`${appName}/apis/process_json/`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: text,
                     });
 
-                    downloadButton.style.display = "block";
+                    if (response.ok) {
+                        const jsonResponse = await response.json();
+                        responseText.innerText = JSON.stringify(jsonResponse, null, 2);
+                        responseHeading.style.display = "block";
 
-                } else {
-                    throw new Error("Error in response");
+                        // Create a blob from the JSON response
+                        const blob = new Blob([JSON.stringify(jsonResponse, null, 2)], {type : 'application/json'});
+
+                        // Create a link for our script to 'click'
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = 'response.json';
+
+                        // This will prompt the user to download the data file named "response.json"
+                        downloadButton.addEventListener('click', function() {
+                            link.click();
+                        });
+
+                        downloadButton.style.display = "block";
+
+                    } else {
+                        throw new Error("Error in response");
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    alert("There was an error processing your file. Please try again.");
                 }
-            } catch (error) {
-                console.error("Error:", error);
-                alert("There was an error processing your file. Please try again.");
-            }
+            };
+            reader.readAsText(file);
         });
     </script>
 </body>
