@@ -19,8 +19,7 @@
         const responseText = document.getElementById("responseText");
         const downloadButton = document.getElementById("downloadButton");
 
-        // appName을 변수로 설정
-        const appName = "http://localhost:8000";
+        const appName = "https://c774-211-198-109-254.ngrok-free.app";
 
         uploadButton.addEventListener("click", async () => {
             if (fileInput.files.length === 0) {
@@ -40,8 +39,7 @@
 
                 if (response.ok) {
                     const jsonResponse = await response.json();
-                    responseText.innerText = "oppsite_name: " + jsonResponse.opposite_name + '\n'
-                        + "recent_responses: " + jsonResponse.recent_responses;
+                    responseText.innerText = "recent_responses: " + JSON.stringify(jsonResponse.recent_responses, null, 2);
                     responseHeading.style.display = "block";
 
                     // Create a blob from the JSON response
