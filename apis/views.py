@@ -8,16 +8,16 @@ import requests
 from requests.exceptions import RequestException
 
 
-def handle_received_json(data):
+def handle_received_json(json_content):
     # 데이터가 실제로 존재하는지 확인
-    if not data:
+    if not json_content:
         return None
 
     # try:
     #     # JSON 데이터를 이용하여 POST 요청을 보냄
     #     # TODO
     #     #   ml_model_url을 실제 머신러닝 모델 URL로 변경해야 함
-    #     response = requests.post('http://ml_model_url/predict', json=data, timeout=5)
+    #     response = requests.post('http://ml_model_url/predict', json=json_content, timeout=5)
     # except RequestException as e:
     #     # 네트워크 관련 오류 발생 시
     #     print(f"Network error: {e}")
