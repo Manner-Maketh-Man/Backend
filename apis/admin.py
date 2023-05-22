@@ -13,7 +13,7 @@ class JSONTransactionAdmin(admin.ModelAdmin):
     response_received_time_formatted.admin_order_field = 'response_received_time'
     response_received_time_formatted.short_description = 'Response Received Time'
 
-    list_display = ('json_received_time_formatted', 'response_received_time_formatted', 'response_data')
+    list_display = ('json_received_time_formatted', 'response_received_time_formatted', 'emotion_value')
     change_list_template = 'apis/change_list.html'
 
 

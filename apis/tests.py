@@ -31,7 +31,7 @@ class JSONTransactionTestCase(TestCase):
         transaction = JSONTransaction.objects.first()
         self.assertIsNotNone(transaction)
         self.assertEqual(json.loads(transaction.json_content), data_to_post)
-        self.assertEqual(transaction.response_data, 123)
+        self.assertEqual(transaction.emotion_value, 123)
 
     def test_process_json_invalid_request_method(self):
         # Send a GET request
