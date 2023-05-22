@@ -41,7 +41,7 @@
                     .then(response => response.json())
                     .then(data => {
                         // 알림창에 JSON 응답 표시 후 새로고침
-                        if (data.recent_responses) {
+                        if (data.response_data) {
                             alert(`${JSON.stringify(data, null, 2)}`);
                             window.location.reload();
                         } else if (data.error) {
