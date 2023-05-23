@@ -14,11 +14,6 @@ import multiprocessing
 
 logging.set_verbosity_error()  # ignore transformer warning
 
-# kobert model
-bertmodel, vocab = get_pytorch_kobert_model()
-tokenizer = get_tokenizer()
-tok = nlp.data.BERTSPTokenizer(tokenizer, vocab, lower=False)
-
 
 # kogpt model
 class Kogpt:
@@ -60,9 +55,8 @@ class Kogpt:
 
         logits = outputs[0]
         logits = logits.detach().cpu()
-        logits = 0.9 * logits
         result = logits.argmax(-1)
-        print("kogpt", logits)
+        print("kogpt     =", logits)
 
         return logits, np.array(result)[0]
 
@@ -104,7 +98,7 @@ class Koelectra:
         logits = outputs[0]
         logits = logits.detach().cpu()
         result = logits.argmax(-1)
-        print("koelectra", logits)
+        print("koelectra =", logits)
 
         return logits, np.array(result)[0]
 
@@ -176,6 +170,7 @@ class Kobert:
         predicted_index = torch.argmax(outputs)
         logits = outputs[0]
         logits = logits.detach().cpu()
+        print("kobert    = ", logits)
 
         return logits, predicted_index.item()
 
@@ -190,6 +185,9 @@ kogpt = Kogpt()
 koelectra = Koelectra(device)
 
 # Load KOBERT
+bertmodel, vocab = get_pytorch_kobert_model()
+tokenizer = get_tokenizer()
+tok = nlp.data.BERTSPTokenizer(tokenizer, vocab, lower=False)
 kobert = Kobert(device)
 
 
@@ -255,15 +253,15 @@ def handle_received_json(json_content):
 
     ensemble = kogpt_score + koelectra_score + kobert_score
 
-    print("ensemble", ensemble)
+    print("ensemble  =", ensemble)
 
-    print(f"kogpt_prediction : {kogpt_prediction} : {label_decoder[kogpt_prediction]}")
-    print(f"koelectra_prediction : {koelectra_prediction} : {label_decoder[koelectra_prediction]}")
-    print(f"kobert_prediction : {kobert_prediction} : {label_decoder[kobert_prediction]}")
+    print(f"kogpt_prediction     = {kogpt_prediction} : {label_decoder[kogpt_prediction]}")
+    print(f"koelectra_prediction = {koelectra_prediction} : {label_decoder[koelectra_prediction]}")
+    print(f"kobert_prediction    = {kobert_prediction} : {label_decoder[kobert_prediction]}")
 
     # ensemble
     ensemble_result = np.argmax(ensemble.numpy())
-    print(f"ensemble_result : {ensemble_result} : {label_decoder[ensemble_result]}")
+    print(f"ensemble_result      = {ensemble_result} : {label_decoder[ensemble_result]}")
     print()
 
     return int(ensemble_result)
