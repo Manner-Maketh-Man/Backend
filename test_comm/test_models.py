@@ -1,3 +1,4 @@
+import json
 import numpy as np
 import pandas as pd
 import re
@@ -235,18 +236,24 @@ def test(test_sentences):
         print()
 
 
+def dump_json(file_name):
+    if file_name.find("_dump") == -1:
+        temp = json.load(open("./" + file_name, "r"))
+        file_name = file_name.split(".")[0] + "_dump.json"
+        with open(file_name, "w") as json_file:
+            json.dump(temp, json_file, indent=None, ensure_ascii=False)
+            print(file_name + " is dumped")
+    return file_name
+
+
 if __name__ == "__main__":
     # Read JSON File
-    JSON_FILE_PATH = "./test3_dump.json"
+    JSON_FILE_NAME = "test2_dump.json"
 
     # for dump json file
-    """
-    temp = json.load(open(JSON_FILE_PATH, "r"))
-    with open("test_file.json", "w") as json_file:
-        json.dump(temp, json_file, indent=None, ensure_ascii=False)
-    """
+    JSON_FILE_NAME = dump_json(JSON_FILE_NAME)
 
-    f = pd.read_json(JSON_FILE_PATH, lines=True)
+    f = pd.read_json(JSON_FILE_NAME, lines=True)
     sentences = get_sentence(file=f)
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -294,8 +301,11 @@ if __name__ == "__main__":
                       "angry:아ㅋㅋㅋ 이제 내 남자친구 아니야 말도 꺼내지마 꼴도 보기 싫어",
                       "disgust:나 이제 걔 숨소리 마저 혐오스러워",
                       ]
-    isTest = True
-    if test:
+
+    isTest = False
+    # isTest = True
+
+    if isTest:
         test(test_sentences)
         exit()
 
